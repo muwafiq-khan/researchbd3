@@ -248,6 +248,7 @@ model fields {
 
   subfields   subfields[]
   researcherFields researcher_fields[]
+  applicableProblems  problem_applicable_fields[]
 }
 
 model subfields {
@@ -279,25 +280,32 @@ model researcher_fields {
 // The Problem Dashboard — core feature of ResearchBD.
 // Real-world research problems that posts and works link to.
 // ============================================================
-
 model problems {
-  id          String      @id @default(uuid())
-  subfieldId  String
-  title       String
-  description String
-  urgencyLevel UrgencyLevel
-  country     String?
-  isActive    Boolean     @default(true)
+  id               String       @id @default(uuid())
+  subfieldId       String
+  title            String
+  description      String
+  detailedContent  String?
+  // long Wikipedia-style description shown on the problem page
+  impact           String?
+  // who is affected and how badly
+  currentProgress  String?
+  // what research has been done so far
+  whatHasBeenTried String?
+  // approaches attempted, what worked, what didn't
+  coverImageUrl    String?
+  // high quality hero image for the problem page
+  thumbnailUrl     String?
+  // small image for the scrollable mini cards in feed
+  urgencyLevel     UrgencyLevel
+  country          String?
+  isActive         Boolean      @default(true)
+  searchVector     String?
 
-  // searchVector is a PostgreSQL full-text search column
-  // it stores a pre-computed search index for fast text search
-  // we'll populate this when inserting/updating problems
-  searchVector String?
-
-  subfield    subfields   @relation(fields: [subfieldId], references: [id])
-  posts       posts[]
+  subfield         subfields    @relation(fields: [subfieldId], references: [id])
+  posts            posts[]
+  applicableFields  problem_applicable_fields[]
 }
-
 // ============================================================
 // POSTS
 // Base table for all four post types.
@@ -514,4 +522,19 @@ model post_saves {
 
   user      users     @relation(fields: [userId], references: [id])
   post      posts     @relation(fields: [postId], references: [id])
+}
+model problem_applicable_fields {
+  problemId             String
+  fieldId               String
+
+  // Field-specific content — rendered when user selects this field as lens
+  // Example: "Flood" problem + "ML" field → how ML addresses flooding
+  howThisFieldHelps     String?
+  relevantTechniques    String?
+  openResearchQuestions String?
+
+  @@id([problemId, fieldId])
+
+  problem   problems  @relation(fields: [problemId], references: [id])
+  field     fields    @relation(fields: [fieldId], references: [id])
 }

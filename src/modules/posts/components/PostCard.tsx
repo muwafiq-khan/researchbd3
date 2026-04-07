@@ -12,6 +12,7 @@ type PostCardProps = {
   authorAvatar: string
   createdAt: string
   likeCount: number
+  initialLiked: boolean
 }
 
 export default function PostCard({
@@ -22,6 +23,7 @@ export default function PostCard({
   authorAvatar,
   createdAt,
   likeCount,
+  initialLiked,
 }: PostCardProps) {
 
   const postTypeColors: Record<string, string> = {
@@ -34,7 +36,7 @@ export default function PostCard({
   const badgeColor = postTypeColors[postType] ?? 'bg-gray-100 text-gray-800'
 
   return (
-    <div className="w-full border border-gray-200 bg-white rounded-lg p-4 shadow-sm">
+    <div className="w-full border border-zinc-800 bg-zinc-900 rounded-lg p-4">
 
       <div className="flex items-center gap-3 mb-3">
         <img
@@ -42,20 +44,20 @@ export default function PostCard({
           alt={authorName}
           className="w-10 h-10 rounded-full object-cover"
         />
-        <span className="font-semibold text-gray-800">{authorName}</span>
+        <span className="font-semibold text-white">{authorName}</span>
       </div>
 
       <span className={`px-2 py-1 rounded text-xs font-medium ${badgeColor}`}>
         {postType.replace(/_/g, ' ')}
       </span>
 
-      <h2 className="text-lg font-bold text-gray-900 mt-2 mb-1">{title}</h2>
+      <h2 className="text-lg font-bold text-white mt-2 mb-1">{title}</h2>
 
       <div className="flex items-center justify-between mt-3">
         <span className="text-sm text-gray-400">{createdAt}</span>
         <a
           href={`/posts/${id}`}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-zinc-400 hover:text-white"
         >
           View Post -&gt;
         </a>
@@ -68,6 +70,7 @@ export default function PostCard({
         <LikeButton
           postId={id}
           initialCount={likeCount}
+          initialLiked={initialLiked}
         />
       </div>
 
