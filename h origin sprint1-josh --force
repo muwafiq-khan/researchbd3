@@ -1,4 +1,0 @@
-[33m83bc9d6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint1-josh[m[33m)[m remove node_modules.zip from tracking
-[33md02ffaf[m sprint1: auth, feed, problems dashboard, seed, migrations
-[33mf91d29d[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m scaffold: full folder structure, schema, migrations, base components
-[33me62b81a[m Initial commit from Create Next App
