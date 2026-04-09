@@ -1,5 +1,6 @@
 import { prisma } from '../../../lib/prisma'
 import ProblemFeed from '../../../modules/problems/components/ProblemFeed'
+import FilterIconButton from '../../../shared/components/FilterIconButton'
 
 const PAGE_SIZE = 10
 
@@ -23,5 +24,12 @@ export default async function ProblemsPage() {
 
   const plainProblems = JSON.parse(JSON.stringify(problems))
 
-  return <ProblemFeed initialProblems={plainProblems} />
+  return (
+    <div>
+      <div className="flex justify-end px-4 pt-3 pb-1">
+        <FilterIconButton />
+      </div>
+      <ProblemFeed initialProblems={plainProblems} />
+    </div>
+  )
 }
