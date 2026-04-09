@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ReactNode } from 'react'
 import { prisma } from '../../lib/prisma'
 import { FilterDataProvider } from '../../shared/providers/FilterDataProvider'
-import FilterIconButton from '../../shared/components/FilterIconButton'
+
 import GlobalFilterOverlay from '../../shared/components/GlobalFilterOverlay'
 
 type PlatformLayoutProps = {
@@ -73,9 +73,6 @@ export default async function PlatformLayout({ children }: PlatformLayoutProps) 
                 Problems
               </Link>
             </div>
-          </div>
-          <div className="flex justify-end px-4 py-2">
-            <FilterIconButton />
           </div>
           {children}
         </main>
