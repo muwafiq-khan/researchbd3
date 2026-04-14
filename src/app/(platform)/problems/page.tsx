@@ -1,14 +1,12 @@
 import { prisma } from '../../../lib/prisma'
 import ProblemFeed from '../../../modules/problems/components/ProblemFeed'
 import FilterIconButton from '../../../shared/components/FilterIconButton'
+import GlobalFilterOverlay from '../../../shared/components/GlobalFilterOverlay'
 
 const PAGE_SIZE = 10
 
 export default async function ProblemsPage() {
 
-  // Fetch first batch on the server — no loading spinner for initial render.
-  // ProblemFeed (Client Component) receives this as props.
-  // Subsequent pages are fetched client-side via /api/problems.
   const problems = await prisma.problems.findMany({
     where: { isActive: true },
     include: {
@@ -30,6 +28,7 @@ export default async function ProblemsPage() {
         <FilterIconButton />
       </div>
       <ProblemFeed initialProblems={plainProblems} />
+      <GlobalFilterOverlay />
     </div>
   )
 }

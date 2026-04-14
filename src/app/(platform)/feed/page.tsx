@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../app/api/auth/[...nextauth]/route'
 import FilterIconButton from '../../../shared/components/FilterIconButton'
+import GlobalFilterOverlay from '../../../shared/components/GlobalFilterOverlay'
 
 export default async function FeedPage() {
   const session = await getServerSession(authOptions)
@@ -56,6 +57,7 @@ export default async function FeedPage() {
           />
         )
       })}
+      <GlobalFilterOverlay />
     </div>
   )
 }

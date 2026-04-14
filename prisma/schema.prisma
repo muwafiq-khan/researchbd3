@@ -144,6 +144,9 @@ model users {
   groupMembers      group_members[]
   postReactions     post_reactions[]
   postSaves         post_saves[]
+  comments        comments[]
+  commentLikes    comment_likes[]
+
 }
 
 // ============================================================
@@ -347,6 +350,8 @@ model posts {
   attachments   post_attachments[]
   reactions     post_reactions[]
   saves         post_saves[]
+  comments        comments[]
+
   collabRequests collaboration_requests[]
 }
 
@@ -538,3 +543,109 @@ model problem_applicable_fields {
   problem   problems  @relation(fields: [problemId], references: [id])
   field     fields    @relation(fields: [fieldId], references: [id])
 }
+
+
+// ============================================================
+// COMMENTS
+// Recursive tree structure for threaded discussions on posts.
+// Each comment can be a top-level comment (parentId = null)
+// or a reply to another comment (parentId = that comment's id).
+//
+// Self-referential relation: parentId points to this same table.
+// This creates a tree — each node knows its parent, and Prisma
+// gives us a `children` array to query downward.
+//
+// Denormalized fields (likeCount, replyCount, depth):
+// These CAN be derived from other data but are stored directly
+// for query performance. likeCount avoids COUNT() joins on every
+// page load. replyCount tells us "this blob has more inside"
+// without querying children. depth avoids walking the parent chain
+// just to know how deep we are.
+// ============================================================
+
+model comments {
+  id          String   @id @default(uuid())
+
+  // Which post this comment belongs to — every comment in a thread
+  // traces back to one post, regardless of nesting depth
+  postId      String
+
+  // Who wrote this comment
+  userId      String
+
+  // Self-referential FK — null means this is a top-level comment.
+  // Non-null means this is a reply to another comment.
+  parentId    String?
+
+  // How deep in the tree. 0 = top-level (direct comment on post),
+  // 1 = reply to a top-level comment, 2 = reply to a reply, etc.
+  // Stored here so we don't have to walk the parent chain to know.
+  depth       Int      @default(0)
+
+  // The actual comment text
+  content     String
+
+  // Flips to true when user edits — UI shows "(edited)" badge
+  isEdited    Boolean  @default(false)
+
+  // Soft delete — instead of removing the row (which would orphan
+  // all child comments), we keep it and show "[deleted]" in the UI.
+  // The tree structure stays intact.
+  isDeleted   Boolean  @default(false)
+
+  // Cached counter — incremented/decremented when someone likes/unlikes.
+  // Avoids expensive COUNT() on comment_likes for every render.
+  // Source of truth is still the comment_likes junction table.
+  likeCount   Int      @default(0)
+
+  // How many direct children (replies) this comment has.
+  // Used to show "X replies" and decide whether to render the
+  // thick vertical line ("more discussion inside").
+  replyCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Relations ────────────────────────────────────────────────
+
+  // Belongs to a post
+  post        posts    @relation(fields: [postId], references: [id])
+
+  // Belongs to a user (the author)
+  user        users    @relation(fields: [userId], references: [id])
+
+  // Self-referential: this comment's parent (nullable)
+  // The "commentThread" label connects parent + children as one relation.
+  // Without the label, Prisma sees two fields pointing to `comments`
+  // and doesn't know which is which.
+  parent      comments?  @relation("commentThread", fields: [parentId], references: [id])
+
+  // Self-referential: all replies TO this comment (reverse direction)
+  children    comments[] @relation("commentThread")
+
+  // One comment has many likes (junction table rows)
+  likes       comment_likes[]
+}
+
+// ============================================================
+// COMMENT LIKES
+// Junction table — tracks who liked which comment.
+// Composite PK prevents double-likes (one like per user per comment).
+// When a row is created here, the parent comment's likeCount
+// is incremented. When deleted, decremented.
+// ============================================================
+
+model comment_likes {
+  userId      String
+  commentId   String
+
+  createdAt   DateTime @default(now())
+
+  // Composite PK — the combination of userId + commentId is unique.
+  // Same pattern as your post_reactions table.
+  @@id([userId, commentId])
+
+  user        users    @relation(fields: [userId], references: [id])
+  comment     comments @relation(fields: [commentId], references: [id])
+}
+

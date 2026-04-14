@@ -1,15 +1,20 @@
 import Link from 'next/link'
 import { ReactNode } from 'react'
 import { prisma } from '../../lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]/route'
 import { FilterDataProvider } from '../../shared/providers/FilterDataProvider'
-
-import GlobalFilterOverlay from '../../shared/components/GlobalFilterOverlay'
+import CreatePostButton from '../../modules/posts/components/CreatePostButton'
 
 type PlatformLayoutProps = {
   children: ReactNode
 }
 
 export default async function PlatformLayout({ children }: PlatformLayoutProps) {
+
+  // Fetch session to get accountType for CreatePostButton
+  const session = await getServerSession(authOptions)
+  const accountType = session?.user?.accountType ?? 'researcher'
 
   const fields = await prisma.fields.findMany({
     include: { subfields: true }
@@ -54,9 +59,8 @@ export default async function PlatformLayout({ children }: PlatformLayoutProps) 
               <span>⚙️</span> <span>Settings</span>
             </button>
           </div>
-          <Link href="/posts/create" className="w-full bg-white text-black font-bold py-3 rounded-full text-center text-lg hover:bg-zinc-200 transition-colors mb-2">
-            + Post
-          </Link>
+          {/* Desktop sidebar: full-width "+ Post" button */}
+          <CreatePostButton accountType={accountType} variant="sidebar" />
         </aside>
 
         <main className="flex-1 md:ml-64 md:mr-auto md:max-w-2xl w-full min-h-screen border-x border-zinc-800 pb-20 md:pb-0">
@@ -85,14 +89,8 @@ export default async function PlatformLayout({ children }: PlatformLayoutProps) 
           <Link href="/profile" className="flex flex-col items-center text-white text-xl">👤</Link>
         </nav>
 
-        <Link
-          href="/posts/create"
-          className="fixed bottom-20 right-5 bg-white text-black font-bold w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg md:hidden z-50"
-        >
-          +
-        </Link>
-
-        <GlobalFilterOverlay />
+        {/* Mobile: fixed circle "+" button */}
+        <CreatePostButton accountType={accountType} variant="mobile" />
 
       </div>
     </FilterDataProvider>
