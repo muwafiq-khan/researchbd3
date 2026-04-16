@@ -24,7 +24,7 @@ export default async function FeedPage() {
         }
       },
       _count: {
-        select: { reactions: true }
+        select: { reactions: true, comments: true }
       }
     },
     orderBy: { createdAt: 'desc' }
@@ -38,6 +38,7 @@ export default async function FeedPage() {
       {posts.map(function(post) {
         const initialLiked = post.reactions.length > 0
         const likeCount = post._count.reactions
+        const commentCount = post._count.comments
 
         return (
           <PostCard
@@ -54,6 +55,7 @@ export default async function FeedPage() {
             })}
             likeCount={likeCount}
             initialLiked={initialLiked}
+            commentCount={commentCount}
           />
         )
       })}
